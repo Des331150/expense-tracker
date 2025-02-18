@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 
 window = tk.Tk()
@@ -54,10 +55,43 @@ def add_transaction():
     
     treeview.insert("","end",values=(date,category,amount,description)) 
 
+def on_item_select(event):
+    selected_item = treeview.selection()
+    if selected_item:
+        item_data = treeview.item(selected_item[0],"values")
+        date_entry.delete(0,tk.END)
+        date_entry.insert(0,item_data[0])
+
+        category_entry.delete(0,tk.END)
+        category_entry.insert(0,item_data[1])
+
+        amount_entry.delete(0,tk.END)
+        amount_entry.insert(0,item_data[2])
+
+        description_entry.delete(0,tk.END)
+        description_entry.insert(0,item_data[3])
+
+def update_transaction():
+    selected_item = treeview.selection()
+    if selected_item:
+        new_date = date_entry.get()
+        new_category = category_entry.get()
+        new_amount = amount_entry.get()
+        new_description = description_entry.get()
+
+        if new_date and new_category and new_amount and new_description:
+            treeview.item(selected_item[0], values=(new_date, new_category, new_amount, new_description))
+        else:
+            messagebox.showwarning("Invalid input, all fields must be filled.")
+    else:
+        messagebox.showwarning("No selection, please select a row to update.")
+
 submit = ttk.Button(input_frame,text="Add Expenses",command=add_transaction)
 submit.grid(row=4,columnspan=2,pady=10)
 
+update = ttk.Button(input_frame,text="Update Expenses",command=update_transaction)
+update.grid(row=5,columnspan=3,pady=10)
 
-
+treeview.bind("<ButtonRelease-1>", on_item_select)
 
 window.mainloop()
