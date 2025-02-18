@@ -51,11 +51,13 @@ def add_transaction():
     category = category_entry.get()
     amount = amount_entry.get()
     description = description_entry.get()
+    
+    treeview.insert("","end",values=(date,category,amount,description)) 
 
-#fix the bug below.
-#treeview.insert(" ","end",values=(date, category, amount, description))
 submit = ttk.Button(input_frame,text="Add Expenses",command=add_transaction)
 submit.grid(row=4,columnspan=2,pady=10)
+
+
 
 
 window.mainloop()
