@@ -1,12 +1,49 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import csv
+import os
+
+def openfile():
+    print("File has been saved.")
+
+def savefile():
+    print("File has been saved.")
+
+CSV_FILE = "expenses.csv"
+
+def initialize_csv():
+    if not os.path.exists(CSV_FILE):
+        with open(CSV_FILE, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date","Category","Amount","Description"])
+
+
+def load_expenses():
+    treeview.delete(*treeview.get_children())
+    with open(CSV_FILE,"r") as file:
+        reader = csv.reader(file)
+        next(reader)
+        for row in reader:
+            treeview.insert("","end",values=row)
 
 
 window = tk.Tk()
 
 window.title("Expense Tracker")
 window.geometry("800x500")
+
+menubar = tk.Menu(window)
+window.config(menu=menubar)
+
+fileMenu = tk.Menu(menubar,tearoff=0)
+menubar.add_cascade(label="File",menu=fileMenu)
+fileMenu.add_command(label="Open",command=openfile)
+fileMenu.add_separator()
+fileMenu.add_command(label="Save,",command=savefile)
+fileMenu.add_separator()
+fileMenu.add_command(label="Exit",command=quit)
+
 
 notebook = ttk.Notebook(window)
 
@@ -53,10 +90,17 @@ def add_transaction():
     amount = amount_entry.get()
     description = description_entry.get()
     
-    if date and category and amount and description:
-        treeview.insert("","end",values=(date,category,amount,description))
-    else:
-        messagebox.showwarning("Invalid input, all fields must be filled.") 
+    if not date or not category or not amount or not description:
+        messagebox.showerror("Error","Date, Category and Amount are required")
+        return
+    
+    with open(CSV_FILE,"a",newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([date,category,amount,description])
+
+    treeview.insert("","end",values=(date,category,amount,description))
+    clear_entries()
+
 
 def on_item_select(event):
     selected_item = treeview.selection()
@@ -92,21 +136,44 @@ def update_transaction():
 
 def delete_transaction():
     selected_item = treeview.selection()
-    if selected_item:
-        treeview.delete(selected_item[0])
-    else:
-        messagebox.showwarning("No selection, please select a row to update.")
+    print("Selected item:",selected_item)
+    if not selected_item:
+        messagebox.showerror("Error","Please select a row to delete.")
+        return
+    
+    values = treeview.item(selected_item,"values")
+      
+    treeview.delete(selected_item[0])
+
+    rows = []
+    with open(CSV_FILE,"r") as file:
+        reader = csv.reader(file)
+        rows = [row for row in reader if row != list(values)]
+        
+    with open(CSV_FILE,"w",newline="") as file:
+        writer = csv.writer(file)
+        writer.writerows(rows)
+
+
+def clear_entries():
+    date_entry.delete(0,tk.END)
+    category_entry.delete(0,tk.END)
+    amount_entry.delete(0,tk.END)
+    description_entry.delete(0,tk.END)
 
 
 submit = ttk.Button(input_frame,text="Add Expenses",command=add_transaction)
 submit.grid(row=4,columnspan=2,pady=10)
 
 update = ttk.Button(input_frame,text="Update Expenses",command=update_transaction)
-update.grid(row=5,columnspan=3,pady=10)
+update.grid(row=5,columnspan=3,pady=5)
 
 update = ttk.Button(input_frame,text="Delete Expenses",command=delete_transaction)
-update.grid(row=6,columnspan=4,pady=10)
+update.grid(row=6,columnspan=4,pady=5)
 
 treeview.bind("<ButtonRelease-1>", on_item_select)
+
+initialize_csv()
+load_expenses()
 
 window.mainloop()
