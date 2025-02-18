@@ -53,7 +53,10 @@ def add_transaction():
     amount = amount_entry.get()
     description = description_entry.get()
     
-    treeview.insert("","end",values=(date,category,amount,description)) 
+    if date and category and amount and description:
+        treeview.insert("","end",values=(date,category,amount,description))
+    else:
+        messagebox.showwarning("Invalid input, all fields must be filled.") 
 
 def on_item_select(event):
     selected_item = treeview.selection()
@@ -86,11 +89,23 @@ def update_transaction():
     else:
         messagebox.showwarning("No selection, please select a row to update.")
 
+
+def delete_transaction():
+    selected_item = treeview.selection()
+    if selected_item:
+        treeview.delete(selected_item[0])
+    else:
+        messagebox.showwarning("No selection, please select a row to update.")
+
+
 submit = ttk.Button(input_frame,text="Add Expenses",command=add_transaction)
 submit.grid(row=4,columnspan=2,pady=10)
 
 update = ttk.Button(input_frame,text="Update Expenses",command=update_transaction)
 update.grid(row=5,columnspan=3,pady=10)
+
+update = ttk.Button(input_frame,text="Delete Expenses",command=delete_transaction)
+update.grid(row=6,columnspan=4,pady=10)
 
 treeview.bind("<ButtonRelease-1>", on_item_select)
 
