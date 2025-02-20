@@ -3,12 +3,36 @@ from tkinter import ttk
 from tkinter import messagebox
 import csv
 import os
+from tkinter import filedialog
 
 def openfile():
     print("File has been saved.")
 
 def savefile():
-    print("File has been saved.")
+    file_path = filedialog.asksaveasfilename(defaultextension=" .txt",filetypes=[("Text file",".txt"),("CSV",",csv"),("All files",".*")])
+    if not file_path:
+        return
+    try:
+        all_rows = []
+        for item in treeview.get_children():
+            row_values = treeview.item(item,"values")
+            all_rows.append(row_values)
+
+        if file_path.endswith(".csv"):
+            with open(file_path,"w",newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Date","Category","Amount","Description"])
+                writer.writerows(all_rows)
+
+        else:
+            with open(file_path,"w") as file:
+                for row in all_rows:
+                    file.write("\t".join(row) + "\n")
+
+        print("File has been saved successfully.")
+
+    except Exception as e:
+        print("Error saving file:",e)
 
 CSV_FILE = "expenses.csv"
 
@@ -136,12 +160,11 @@ def update_transaction():
 
 def delete_transaction():
     selected_item = treeview.selection()
-    print("Selected item:",selected_item)
     if not selected_item:
         messagebox.showerror("Error","Please select a row to delete.")
         return
     
-    values = treeview.item(selected_item,"values")
+    values = treeview.item(selected_item[0],"values")
       
     treeview.delete(selected_item[0])
 
