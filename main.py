@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -6,10 +7,33 @@ import os
 from tkinter import filedialog
 
 def openfile():
-    print("File has been saved.")
+    file_open = filedialog.askopenfilename(filetypes=[("Text file",".txt"),("CSV",".csv"),("All files",".*")],title="Open File")
+    if not file_open:
+        return
+    try:
+        if file_open.endswith(".csv"):
+            with open(file_open,"r",newline="") as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                treeview.delete(*treeview.get_children())
+                for row in reader:
+                    treeview.insert("","end",values=(row))
+
+        else:
+            with open(file_open,"r") as file:
+                treeview.delete(*treeview.get_children())
+                for line in file:
+                    data = line.strip().split("\t")
+                    treeview.insert("","end",values=(data))
+
+            print("File has been opened successfully")
+    
+    except Exception as e:
+            print("Error opening file:",e)
+               
 
 def savefile():
-    file_path = filedialog.asksaveasfilename(defaultextension=" .txt",filetypes=[("Text file",".txt"),("CSV",",csv"),("All files",".*")])
+    file_path = filedialog.asksaveasfilename(defaultextension=" .txt",filetypes=[("Text file",".txt"),("CSV",".csv"),("All files",".*")])
     if not file_path:
         return
     try:
@@ -64,7 +88,7 @@ fileMenu = tk.Menu(menubar,tearoff=0)
 menubar.add_cascade(label="File",menu=fileMenu)
 fileMenu.add_command(label="Open",command=openfile)
 fileMenu.add_separator()
-fileMenu.add_command(label="Save,",command=savefile)
+fileMenu.add_command(label="Save",command=savefile)
 fileMenu.add_separator()
 fileMenu.add_command(label="Exit",command=quit)
 
@@ -156,6 +180,7 @@ def update_transaction():
             messagebox.showwarning("Invalid input, all fields must be filled.")
     else:
         messagebox.showwarning("No selection, please select a row to update.")
+    clear_entries()
 
 
 def delete_transaction():
@@ -176,6 +201,7 @@ def delete_transaction():
     with open(CSV_FILE,"w",newline="") as file:
         writer = csv.writer(file)
         writer.writerows(rows)
+    clear_entries()
 
 
 def clear_entries():
